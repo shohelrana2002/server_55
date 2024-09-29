@@ -1,5 +1,5 @@
-const cors = require("cors");
 const express = require("express");
+const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
@@ -33,12 +33,35 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const users = await userCollection.findOne(query);
+      res.send(users);
+    });
+
     app.post("/users", async (req, res) => {
       const user = req.body;
       const result = await userCollection.insertOne(user);
       console.log("NEw user", user);
       res.send(result);
     });
+
+    app.put("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const user = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const option = { upsert: true };
+      const updateUser = {
+        $set: {
+          name: user.name,
+          email: user.email,
+        },
+      };
+      const result = await userCollection.updateOne(filter, updateUser, option);
+      res.send(result);
+    });
+
     app.delete("/users/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
